@@ -14,8 +14,8 @@
         <!-- Search -->
         <input type="text" name="search" placeholder="Search Product">
         <select name="searchType">
-            <option value="binary">Binary Search</option>
             <option value="linear">Linear Search</option>
+            <option value="binary">Binary Search</option>
         </select>
         <button type="submit" name="searchSubmit">Search</button>
 
@@ -120,26 +120,29 @@ if (isset($_POST['sort'])) {
     }
 }
 
-// Handle search TODO: fix search
+// Handle search
+
 if (isset($_POST['searchSubmit']) && isset($_POST['searchType'])) {
     $searchType = $_POST['searchType'];
     $searchValue = $_POST['search'];
     $searchResults = [];
+
     foreach ($products as $manufacturer => $productArray) {
         if ($searchType == 'binary') {
             $productArray = quicksort($productArray); // Ensure the array is sorted for binary search
-            if (binarySearch($productArray, $searchValue)) {
-                $searchResults[$manufacturer][] = $searchValue;
+            $result = binarySearch($productArray, $searchValue);
+            if ($result !== false) {
+                $searchResults[$manufacturer][] = $result;
             }
         } elseif ($searchType == 'linear') {
             foreach ($productArray as $product) {
-                if ($product['name'] == $searchValue) {
+                if (stripos($product['name'], $searchValue) !== false) {
                     $searchResults[$manufacturer][] = $product;
-                    break;
                 }
             }
         }
     }
+
     if (!empty($searchResults)) {
         echo "<h2>Search Results</h2>";
         foreach ($searchResults as $manufacturer => $results) {
@@ -161,10 +164,10 @@ function binarySearch($array, $x) {
     $high = count($array) - 1;
     while ($low <= $high) {
         $mid = floor(($low + $high) / 2);
-        if ($array[$mid]['name'] == $x) {
-            return true;
+        if (stripos($array[$mid]['name'], $x) !== false) {
+            return $array[$mid];
         }
-        if ($array[$mid]['name'] < $x) {
+        if (strcasecmp($array[$mid]['name'], $x) < 0) {
             $low = $mid + 1;
         } else {
             $high = $mid - 1;
@@ -172,6 +175,7 @@ function binarySearch($array, $x) {
     }
     return false;
 }
+
 
 // Handle flipping
 if (isset($_POST['flip'])) {
