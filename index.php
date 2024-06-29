@@ -13,10 +13,14 @@
 <form method="POST" action="">
     <div class="controls">
         <!-- Search -->
-        <input type="text" name="search" placeholder="Search Product">
-
-        <button class="search" name="searchType" value="binary" type="submit">Binary Search</button>
-        <button class="search" name="searchType" value="linear" type="submit">Linear Search</button>
+        <form method="POST" action="">
+            <input type="text" name="search" placeholder="Search Product">
+            <select name="searchType">
+                <option value="binary">Binary Search</option>
+                <option value="linear">Linear Search</option>
+            </select>
+            <button type="submit" name="searchSubmit">Search</button>
+        </form>
         
         <hr>
         
@@ -41,9 +45,11 @@
 <?php
 // Product array
 $products = [
-    "Apple" => ["iPhone 6s", "iPhone 10", "iPhone 14"],
-    "Samsung" => [350, 200, 522, 400, 75],
-    "Manufacturer12" => [10, 5, 9, 4, 7, 88, 0, 8, 3]
+    "Apple" => ["iPhone 6s", "iPhone 10", "iPhone 14", "iPhone 15 Pro Max"],
+    "Samsung" => ["Galaxy S10", "Galaxy S20", "Galaxy S6", "Galaxy S21"],
+    "Nokia" => ["3310", "N-Gage", "Lumia"],
+    "Sony" => ["Xperia", "PlayStation", "Walkman", "Bravia"],
+    "LG" => ["G2", "G3", "G4"]
 ];
 
 // Handle login
@@ -97,24 +103,56 @@ if (isset($_POST['sort'])) {
 }
 
 // Handle search
-if (isset($_POST['search']) && isset($_POST['searchType'])) {
+if (isset($_POST['searchSubmit']) && isset($_POST['searchType'])) {
     $searchType = $_POST['searchType'];
     $searchValue = $_POST['search'];
     $searchResults = [];
     foreach ($products as $manufacturer => $productArray) {
         if ($searchType == 'binary') {
-            if (in_array($searchValue, $productArray)) {
-                $searchResults[$manufacturer] = $searchValue;
+            $productArray = quicksort($productArray); // Ensure the array is sorted for binary search
+            if (binarySearch($productArray, $searchValue)) {
+                $searchResults[$manufacturer][] = $searchValue;
             }
         } elseif ($searchType == 'linear') {
             foreach ($productArray as $product) {
                 if ($product == $searchValue) {
-                    $searchResults[$manufacturer] = $product;
+                    $searchResults[$manufacturer][] = $product;
                     break;
                 }
             }
         }
     }
+    if (!empty($searchResults)) {
+        echo "<h2>Search Results</h2>";
+        foreach ($searchResults as $manufacturer => $results) {
+            echo "<h3>$manufacturer</h3>";
+            echo "<ul>";
+            foreach ($results as $result) {
+                echo "<li>$result</li>";
+            }
+            echo "</ul>";
+        }
+    } else {
+        echo "<p>No results found</p>";
+    }
+}
+
+// Binary Search function
+function binarySearch($array, $x) {
+    $low = 0;
+    $high = count($array) - 1;
+    while ($low <= $high) {
+        $mid = floor(($low + $high) / 2);
+        if ($array[$mid] == $x) {
+            return true;
+        }
+        if ($array[$mid] < $x) {
+            $low = $mid + 1;
+        } else {
+            $high = $mid - 1;
+        }
+    }
+    return false;
 }
 
 // Handle flipping
